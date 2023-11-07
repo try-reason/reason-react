@@ -1,0 +1,20 @@
+{
+  "name": "tryreason-react",
+  "type": "module",
+  "main": "dist/index.js",
+  "version": "0.0.2-alpha",
+  "scripts": {
+    "prepack": "bunx tsc"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.37",
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "reason-decoder": "^0.0.1"
+  }
+}
