@@ -34,28 +34,7 @@ async function* fetchReason(url: string, body: Record<string, any>, headers: Rec
     const { value } = result
 
     const text = new TextDecoder("utf-8").decode(value)
-    buffer += text
-
-    if (buffer.indexOf(errorIdentifier) !== -1) {
-      throw new Error('The server returned an error.')
-    }
-
-    const texts = buffer.split(dividerStart)
-
-    for (let t of texts) {
-      if (t === '') continue
-
-      if (t.endsWith(dividerEnd)) {
-        yield t.replace(dividerEnd, '')
-      } else {
-        buffer = t
-        break
-      }
-    }
-    
-    if (texts[texts.length - 1].endsWith(dividerEnd)) {
-      buffer = ''
-    }
+    yield text
 
     result = await reader.read()
   }
