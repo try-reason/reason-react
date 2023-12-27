@@ -2,7 +2,7 @@
   "name": "tryreason-react",
   "type": "module",
   "main": "dist/index.js",
-  "version": "0.0.3-alpha",
+  "version": "0.0.4-alpha",
   "scripts": {
     "prepack": "bunx tsc"
   },
@@ -15,6 +15,6 @@
   },
   "dependencies": {
     "react": "^18.2.0",
-    "reason-decoder": "^0.0.3"
+    "reason-decoder": "^0.0.4"
   }
 }
