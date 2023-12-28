@@ -1,14 +1,18 @@
 import StreamDecoder, { dividerEnd, dividerStart, errorIdentifier } from "reason-decoder";
 import { useRef, useState } from "react";
 
-async function* fetchReason(url: string, body: Record<string, any>, headers: Record<string, string>, method: string) {
+async function* fetchReason(url: string, body: Record<string, any>, headers: Record<string, string>, method: string, internalStopReasonCallAux: any) {
+  const abortController = new AbortController();
+  const currentAux = internalStopReasonCallAux.current
+
   const res = await fetch(url, {
     method,
     body: method === 'GET' ? undefined: JSON.stringify(body),
     headers: {
       ...headers,
       'Content-Type': 'application/json'
-    }
+    },
+    signal: abortController.signal
   })
 
   const contentType = res.headers.get('Content-Type');
@@ -31,6 +35,12 @@ async function* fetchReason(url: string, body: Record<string, any>, headers: Rec
   let buffer = ''
 
   while (!result.done) {
+    if (currentAux !== internalStopReasonCallAux.current) {
+      await reader.cancel()
+      abortController.abort()
+      return
+    }
+
     const { value } = result
 
     const text = new TextDecoder("utf-8").decode(value)
@@ -50,6 +60,8 @@ export default function useReason(entrypointUrl: string) {
   const [data, setResponse] = useState<Record<string, any>>({})
   const onFinishCallback = useRef<(() => void) | null>(null);
   const onErrorCallback = useRef<(() => void) | null>(null);
+  
+  const internalStopReasonCallAux = useRef(1)
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isStreaming, setIsStreaming] = useState<boolean>(false)
@@ -64,6 +76,7 @@ export default function useReason(entrypointUrl: string) {
 
   async function reason(prop?: Partial<ReasonProps>) {
     try {
+      internalStopReasonCallAux.current++
       setIsLoading(true)
       setResponse({})
       let decoder = new StreamDecoder()
@@ -71,7 +84,7 @@ export default function useReason(entrypointUrl: string) {
       const body = prop?.body ?? {}
       const headers = prop?.headers ?? {}
   
-      let gen = fetchReason(entrypointUrl, body, headers, prop?.method ?? 'POST')
+      let gen = fetchReason(entrypointUrl, body, headers, prop?.method ?? 'POST', internalStopReasonCallAux)
       let result = await gen.next()
       setIsLoading(false)
       setIsStreaming(true)
